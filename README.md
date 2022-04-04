@@ -1,2 +1,3 @@
-# covid-tweet-analysis
-Analysis of extracted COVID tweets from twitter API
+# Project Structure
+
+![structure](./images/structure.png)
