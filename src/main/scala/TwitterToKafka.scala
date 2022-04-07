@@ -15,12 +15,13 @@ import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 object TwitterToKafka {
 
   @throws[InterruptedException]
-  def run(consumerKey: String, consumerSecret: String, token: String, secret: String): Unit = { // Create an appropriately sized blocking queue
+  def run(consumerKey: String, consumerSecret: String, token: String, secret: String): Unit = {
+    // Create an appropriately sized blocking queue
     val queue = new LinkedBlockingQueue[String](10000)
     // Endpoint use to track terms
     val endpoint = new StatusesFilterEndpoint
     // add some track terms
-    // todo: Take the terms from the file keywords.txt
+    // todo: #1 - Take the terms from the file keywords.txt
     endpoint.trackTerms(Lists.newArrayList("covid", "virus"))
     // Define auth structure
     val auth = new OAuth1(consumerKey, consumerSecret, token, secret)
@@ -47,7 +48,7 @@ object TwitterToKafka {
     val producer = new KafkaProducer[String, String](kafkaProducerProps)
 
     // Take 10 msgs from stream and push it to kafka topic named test-topic
-    for (msgRead <- 0 until 10) {
+    for (msgRead <- 0 until 3) {
         val msg =  queue.poll(5, TimeUnit.SECONDS)
         print(msg)
         if (msg != null) {
@@ -57,7 +58,7 @@ object TwitterToKafka {
     // Stop the client
     client.stop()
     // Print some stats
-    println("The client read %d messages!\n", client.getStatsTracker.getNumMessages)
+    println("The client read %d messages!\n", client.getStatsTracker.getNumMessages - 1)
   }
 
   def main(args: Array[String]): Unit = {
