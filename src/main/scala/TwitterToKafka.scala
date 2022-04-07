@@ -6,7 +6,7 @@ import com.twitter.hbc.core.processor.StringDelimitedProcessor
 import com.twitter.hbc.httpclient.auth.OAuth1
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
-import org.apache.spark.sql.SparkSession
+//import org.apache.spark.sql.SparkSession
 
 import java.util.Properties
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
@@ -16,15 +16,20 @@ object TwitterToKafka {
 
   @throws[InterruptedException]
   def run(consumerKey: String, consumerSecret: String, token: String, secret: String): Unit = {
+
     // Create an appropriately sized blocking queue
     val queue = new LinkedBlockingQueue[String](10000)
+
     // Endpoint use to track terms
     val endpoint = new StatusesFilterEndpoint
-    // add some track terms
+
+    // Add some track terms
     // todo: #1 - Take the terms from the file keywords.txt
     endpoint.trackTerms(Lists.newArrayList("covid", "virus"))
+
     // Define auth structure
     val auth = new OAuth1(consumerKey, consumerSecret, token, secret)
+
     // Create a new BasicClient. By default gzip is enabled.
     val client = new ClientBuilder()
       .name("sampleExampleClient")
@@ -33,8 +38,10 @@ object TwitterToKafka {
       .authentication(auth)
       .processor(new StringDelimitedProcessor(queue))
       .build
+
     // Connect the client with the above configuration
     client.connect()
+
     // Set configuration for kafka
     val kafkaProducerProps: Properties = {
       val props = new Properties()
@@ -47,7 +54,7 @@ object TwitterToKafka {
     // Create a producer for kafka
     val producer = new KafkaProducer[String, String](kafkaProducerProps)
 
-    // Take 10 msgs from stream and push it to kafka topic named test-topic
+    // Take 10 messages from stream and push it to kafka topic named test-topic
     for (msgRead <- 0 until 3) {
         val msg =  queue.poll(5, TimeUnit.SECONDS)
         print(msg)
@@ -55,10 +62,12 @@ object TwitterToKafka {
           producer.send(new ProducerRecord[String, String]("test-topic", null, msg))
         }
     }
+
     // Stop the client
     client.stop()
+
     // Print some stats
-    println("The client read %d messages!\n", client.getStatsTracker.getNumMessages - 1)
+    println(s"The client read ${client.getStatsTracker.getNumMessages - 1} messages!")
   }
 
   def main(args: Array[String]): Unit = {
