@@ -2,7 +2,7 @@ import org.apache.spark.SparkContext._
 import org.apache.spark._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.twitter._
