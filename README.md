@@ -1,11 +1,3 @@
-# Objective
-
-[link](https://docs.google.com/document/d/1u7evaLRQ_CFOKFJSi0JniaaI_4hoxFYAyMqHrtSwFuY/edit)
-
-# Design
-
-![structure](./images/structure.png)
-
 # Steps to follow
 
 1. Create New Project in IntelliJ with following versions
@@ -14,6 +6,7 @@ sbt version = 1.6.2
 SDK = 11 (Amazon Corretto)
 scala version = 2.12.15
 Spark Version = 3.2.1
+Confluent Version = 7.0.1
 ```
 
 2. Add Following script to `build.sbt`
@@ -132,3 +125,6 @@ send first message
 send second message
 send third message
 ```
+
+4. Run file `TwitterToKafka.scala`. It will send data to Kafka from twitter using API hbc.
+5. Run file `KafkaToMongo.scala`. It will extract useful data from Kafka and send useful data to MongoDB.
