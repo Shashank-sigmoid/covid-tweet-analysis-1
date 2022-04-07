@@ -20,6 +20,18 @@ libraryDependencies += "com.typesafe.play" %% "play-json" % "2.9.2"
 libraryDependencies += "com.twitter" % "hbc-core" % "2.2.0"
 
 
+// API Service
+//libraryDependencies += "com.typesafe.akka" % "akka-actor-typed_2.13" % "2.6.19"
+//libraryDependencies += "com.typesafe.akka" % "akka-stream-typed_2.13" % "2.6.19"
+//libraryDependencies += "com.typesafe.akka" % "akka-http_2.13" % "10.2.9"
+//libraryDependencies += "com.typesafe.akka" % "akka-http-spray-json_2.13" % "10.2.9"
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-actor"   % "2.6.19",
+  "com.typesafe.akka" %% "akka-slf4j"   % "2.6.19",
+  "com.typesafe.akka" %% "akka-remote"  % "2.6.19",
+  "com.typesafe.akka" %% "akka-agent"   % "2.5.32",
+  "com.typesafe.akka" %% "akka-testkit" % "2.6.19" % "test"
+)
 
 lazy val root = (project in file("."))
   .settings(
