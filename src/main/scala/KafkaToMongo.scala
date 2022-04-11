@@ -87,7 +87,9 @@ object KafkaToMongo {
     // cleaned_columns is a PLAN, not an actual collection
     // We can't actually collect data in streaming data, we can only use `data.write` to collect it, which will be used as sink
     // $"*" +:  => Add this before cleaned_columns to get value columns as well
-    val table: DataFrame = raw_json.select(cleaned_columns: _*)
+    val table_with_null_values: DataFrame = raw_json.select(cleaned_columns: _*)
+    // Remove document which doesn't contain user_location
+    val table = table_with_null_values.na.drop(Seq("user_location"))
     // table
     // KEY                VALUE
     // "text"       | "RT @RepThomasMassie: You’re at least 200 times (20,000%) more likely to die of something other than COVID, than to die with COVID.\n\nCOVID i…",

@@ -51,9 +51,6 @@ libraryDependencies += "com.typesafe.play" %% "play-json" % "2.9.2"
 // HBC Java Client
 libraryDependencies += "com.twitter" % "hbc-core" % "2.2.0"
 
-// Mongo - Scala
-libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "4.5.1"
-
 // Akka
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor"   % "2.6.19",
