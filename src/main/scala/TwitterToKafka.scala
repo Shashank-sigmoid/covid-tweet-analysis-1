@@ -7,7 +7,6 @@ import com.twitter.hbc.httpclient.auth.OAuth1
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
 import scala.io.Source
-//import org.apache.spark.sql.SparkSession
 
 import java.util.Properties
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
@@ -61,19 +60,19 @@ object TwitterToKafka {
     // Create a producer for kafka
     val producer = new KafkaProducer[String, String](kafkaProducerProps)
 
-    // Take 10 messages from stream and push it to kafka topic named test-topic
+    // Take 3 messages from stream and push it to kafka topic named test-topic with null key
     for (msgRead <- 0 until 3) {
-        val msg =  queue.poll(5, TimeUnit.SECONDS)
-        print(msg)
-        if (msg != null) {
-          producer.send(new ProducerRecord[String, String]("test-topic", null, msg))
-        }
+      val msg =  queue.poll(5, TimeUnit.SECONDS)
+      print(msg)
+      if (msg != null) {
+        producer.send(new ProducerRecord[String, String]("test-topic", null, msg))
+      }
     }
 
     // Stop the client
     client.stop()
 
-    // Print some stats
+    // Print no. of tweets fetched
     println(s"The client read ${client.getStatsTracker.getNumMessages - 1} messages!")
   }
 
