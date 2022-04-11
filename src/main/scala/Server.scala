@@ -1,4 +1,5 @@
 // https://riptutorial.com/akka/example/31018/akka-http-server--hello-world--scala-dsl-
+import SparkMongo.fetchAllJsonString
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
@@ -7,7 +8,6 @@ import akka.http.scaladsl.server._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-
 object Server extends App {
 
   implicit val system: ActorSystem = ActorSystem("ProxySystem")
@@ -20,8 +20,8 @@ object Server extends App {
         }
       },
       get{
-        path("tello"){
-          complete(HttpEntity(ContentTypes.`application/json`, "[{\"name\": \"Bhavesh\", \"age\":21, \"gender\": \"Male\"},{\"name\": \"Bhavesh\", \"age\":21, \"gender\": \"Male\"}]"))
+        path("all"){
+          complete(HttpEntity(ContentTypes.`application/json`, fetchAllJsonString()))
         }
       }
     )
