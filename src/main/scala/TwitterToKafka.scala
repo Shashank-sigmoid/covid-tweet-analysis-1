@@ -26,10 +26,10 @@ object TwitterToKafka {
 
     // Add some track terms
     // reading keywords from text file
-    val filename = "./src/files/keywords.txt"
-    var keywords=""
+    val filename = "src/main/resources/keywords.txt"
+    var keywords= ""
     for (keyword <- Source.fromFile(filename).getLines) {
-      keywords += keyword + ", "
+      keywords += keyword.toLowerCase + ", "
     }
 
     endpoint.trackTerms(Lists.newArrayList(keywords))
