@@ -194,16 +194,10 @@ object TwitterToKafka {
 
   @throws[InterruptedException]
   def run(consumerKey: String, consumerSecret: String, token: String, secret: String): Unit = {
-    // Create an appropriately sized blocking queue
     val queue = new LinkedBlockingQueue[String](10000)
-    // Endpoint use to track terms
     val endpoint = new StatusesFilterEndpoint
-    // add some track terms
-    // todo: #1 - Take the terms from the file keywords.txt
     endpoint.trackTerms(Lists.newArrayList("covid", "virus"))
-    // Define auth structure
     val auth = new OAuth1(consumerKey, consumerSecret, token, secret)
-    // Create a new BasicClient. By default gzip is enabled.
     val client = new ClientBuilder()
       .name("sampleExampleClient")
       .hosts(Constants.STREAM_HOST)
@@ -211,9 +205,7 @@ object TwitterToKafka {
       .authentication(auth)
       .processor(new StringDelimitedProcessor(queue))
       .build
-    // Connect the client with the above configuration
     client.connect()
-    // Set configuration for kafka
     val kafkaProducerProps: Properties = {
       val props = new Properties()
       props.put("bootstrap.servers", "localhost:9092")
@@ -221,11 +213,8 @@ object TwitterToKafka {
       props.put("value.serializer", classOf[StringSerializer].getName)
       props
     }
-
-    // Create a producer for kafka
     val producer = new KafkaProducer[String, String](kafkaProducerProps)
 
-    // Take 10 msgs from stream and push it to kafka topic named test-topic
     for (msgRead <- 0 until 10) {
         val msg =  queue.poll(5, TimeUnit.SECONDS)
         print(msg)
@@ -233,9 +222,7 @@ object TwitterToKafka {
           producer.send(new ProducerRecord[String, String]("test-topic", null, msg))
         }
     }
-    // Stop the client
     client.stop()
-    // Print some stats
     println("The client read %d messages!\n", client.getStatsTracker.getNumMessages - 1)
   }
 
@@ -262,6 +249,7 @@ object TwitterToKafka {
 
 ## STEP 3: Transform Data using Spark Streaming and Load to MongoDB
 
+`KafkaToMongo.scala`
 ```scala
 import org.apache.spark.SparkContext._
 import org.apache.spark._
@@ -275,8 +263,6 @@ import org.apache.spark.streaming.twitter._
 import scala.util.parsing.json._
 
 object KafkaToMongo {
-
-  // Function which returns string by replacing every "." to "_"
   def replaceDotsForColName(name: String): String = {
     if(name.contains('.')){
       return name.replace(".", "_")
@@ -287,40 +273,20 @@ object KafkaToMongo {
   }
 
   def main(args: Array[String]): Unit = {
-    // Configure the session with MongoDB
     val spark = SparkSession.builder
                   .master("local")
                   .appName("demo")
                   .config("spark.mongodb.output.uri", "mongodb://localhost:27017")
                   .getOrCreate()
-
-    // Add this for $"value" i.e. explicitly mentioning that value is a attribute not string
     import spark.implicits._
-
-    // READ the stream from Kafka Topic (Source)
-    // df will be in binary format b"------"
     val df = spark.readStream
                   .format("kafka")
                   .option("kafka.bootstrap.servers", "localhost:9092")
                   .option("subscribe", "test-topic")
                   .option("startingOffsets", "earliest")
                   .load()
-    // df
-    //     KEY                      VALUE
-    //    "value"         |  { "$binary" : "iaWRfc3RyIjoiMjEwMzIwNTk1IiwiaW5kaCg==", "$type" : "00" },
-    //    "topic"         | "test-topic",
-    //    "partition"     |  0,
-    //    "offset"        |  NumberLong(0),
-    //    "timestamp"     | ISODate("2022-04-06T15:31:00.696Z"),
-    //    "timestampType" | 0
 
     val raw_json: DataFrame = df.selectExpr("CAST(value AS STRING)")
-    // raw_json
-    // KEY                 VALUE
-    //             v this \(backslash) is to let json know to take " (double quote) literally and not as elimination of string
-    // "value"  | "{\"created_at\":\"Wed Apr 06 15:30:55 +0000 2022\",\"id\":1511728162857619458,\"id_str\":\"1511728162857619458\",
-
-    // Mention column to be extracted from "value" column
     val columns: Seq[String] =  Seq(
       "created_at",
       "id",
@@ -335,32 +301,11 @@ object KafkaToMongo {
       "entities.hashtags",
       "lang"
     )
-
-    // get_json_object(col, path): Extracts json object from a json string based on json path specified, and returns json string of the extracted json object.
-    // path = "$$.$c" => First $ specifies second $ as variable not str, now one $ implies root document in MongoDB
-    //                   Dot (.) implies go inside root document and find the value of key written right after it ($c)
-    //                   Third dollar specifies c as variable not str which is `columns` values one by one
-    // .alias(fun(c)) => Because MongoDB doesn't support (.) or ($) in its column, so if any value in columns contain
-    //                   data like `user.id` (which means go inside `user` and extract value of key `id`), we have to
-    //                    replace every dots with _ (underscore)
     val cleaned_columns: Seq[Column] = columns
           .map(c =>
             get_json_object($"value", s"$$.$c").alias(replaceDotsForColName(c))
           )
-
-    // Select all columns which is mentioned in the plan of cleaned_columns [PLAN]
-    // cleaned_columns is a PLAN, not an actual collection
-    // We can't actually collect data in streaming data, we can only use `data.write` to collect it, which will be used as sink
-    // $"*" +:  => Add this before cleaned_columns to get value columns as well
     val table: DataFrame = raw_json.select(cleaned_columns: _*)
-    // table
-    // KEY                VALUE
-    // "text"       | "RT @RepThomasMassie: You’re at least 200 times (20,000%) more likely to die of something other than COVID, than to die with COVID.\n\nCOVID i…",
-    // "created_at" | "Wed Apr 06 15:55:03 +0000 2022",
-    // "user_id"    | "980238526305460224"
-
-    // For each batch(batchDF), provided what should be done inside it as a function
-    // Storing in mongo, with awaitTermination
     table.writeStream.foreachBatch { (batchDF: DataFrame, batchId: Long) =>
       batchDF.write
       .format("mongo")
@@ -383,3 +328,78 @@ object KafkaToMongo {
 
 ## STEP 4: Serve MongoDB data to Akka HTTP API on Localhost
 
+`Server.scala`
+```scala
+import SparkMongo.{fetchAllJsonString, fetchQueryJsonString}
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server._
+
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+object Server extends App {
+ 
+  implicit val system: ActorSystem = ActorSystem("ProxySystem")
+  val pipeline: String = "[{ $match: { user_location: { $exists: true } } }]"
+  val route = pathPrefix("api"){
+    concat(
+      get{
+        path("hello"){
+          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
+        }
+      },
+      get{
+        path("all"){
+          complete(HttpEntity(ContentTypes.`application/json`, fetchAllJsonString()))
+        }
+      },
+      get{
+        path("query"){
+          complete(HttpEntity(ContentTypes.`application/json`, fetchQueryJsonString(pipeline)))
+        }
+      }
+    )
+  }
+  val bindingFuture = Http().newServerAt("127.0.0.1", port = 8080).bindFlow(route)
+  Await.result(system.whenTerminated, Duration.Inf)
+
+}
+```
+
+Go to `localhost:8080/api/all`
+
+**Result**
+```json
+[
+  {
+    "_id": {
+      "oid": "624dd4a49898fd74d9963671"
+    },
+    "created_at": "Wed Apr 06 15:30:55 +0000 2022",
+    "entities_hashtags": "[]",
+    "id": "1511728162857619458",
+    "lang": "en",
+    "text": "@oscarhumb @LangmanVince Yeah Biden is a piece of sh*t liar and a failure!\n\nWhat kind of stupidty does it take to b… https://t.co/L3p8ncFeFa",
+    "truncated": "true",
+    "user_location": "fabulous Las Vegas, NV",
+    "user_name": "A Devoted Yogi",
+    "user_screen_name": "ADevotedYogi"
+  },
+  {
+    "_id": {
+      "oid": "624dd4a49898fd74d9963672"
+    },
+    "created_at": "Wed Apr 06 15:30:55 +0000 2022",
+    "entities_hashtags": "[]",
+    "id": "1511728163168174093",
+    "lang": "fr",
+    "text": "RT @Belzeboule_: @mev479 @marc_2969 @ch_coulon L'abrogation du pass est dans le programme de Zemmour. Et c'est bien une abrogation, pas une…",
+    "truncated": "false",
+    "user_location": "Montauban, France",
+    "user_name": "GUERMACHE BHARIA",
+    "user_screen_name": "GuermacheBharia"
+  }
+]
+```

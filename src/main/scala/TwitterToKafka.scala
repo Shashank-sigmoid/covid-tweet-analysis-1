@@ -24,13 +24,13 @@ object TwitterToKafka {
     val endpoint = new StatusesFilterEndpoint
 
     // Add some track terms
-    // todo: #1 - Take the terms from the file keywords.txt
-    // Reading keywords from txt file
-    val filename = "keywords.txt"
-    var keywords: String = ""
-    for(line <- Source.fromFile(filename).getLines) {
-      keywords += line + ", "
+    // reading keywords from text file
+    val filename = "src/main/resources/keywords.txt"
+    var keywords= ""
+    for (keyword <- Source.fromFile(filename).getLines) {
+      keywords += keyword.toLowerCase + ", "
     }
+
     endpoint.trackTerms(Lists.newArrayList(keywords))
 
     // Define auth structure
