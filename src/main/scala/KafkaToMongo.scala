@@ -7,6 +7,9 @@ import org.apache.spark.streaming.StreamingContext._
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.twitter._
 
+import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
+
 import scala.util.parsing.json._
 
 object KafkaToMongo {
@@ -81,9 +84,7 @@ object KafkaToMongo {
     //                   data like `user.id` (which means go inside `user` and extract value of key `id`), we have to
     //                    replace every dots with _ (underscore)
     val cleaned_columns: Seq[Column] = columns
-      .map(c =>
-        get_json_object($"value", s"$$.$c").alias(replaceDotsForColName(c))
-      )
+      .map(c => get_json_object($"value", s"$$.$c").alias(replaceDotsForColName(c)))
 
     // Select all columns which is mentioned in the plan of cleaned_columns [PLAN]
     // cleaned_columns is a PLAN, not an actual collection
@@ -91,18 +92,17 @@ object KafkaToMongo {
     // $"*" +:  => Add this before cleaned_columns to get value columns as well
 
     val table_with_null_values: DataFrame = raw_json.select(cleaned_columns: _*)
-    // Remove document which doesn't contain user_location
 
-    val table = table_with_null_values.na.drop(Seq("user_location"))
+    // Remove document which doesn't contain user_location and created_at
+    val table = table_with_null_values.na.drop(Seq("user_location", "created_at"))
+
     // table
     // KEY                VALUE
     // "text"       | "RT @RepThomasMassie: You’re at least 200 times (20,000%) more likely to die of something other than COVID, than to die with COVID.\n\nCOVID i…",
     // "created_at" | "Wed Apr 06 15:55:03 +0000 2022",
     // "user_id"    | "980238526305460224"
-
     // For each batch (batchDF), providing what should be done inside it as a function
     // Storing in mongoDB, with awaitTermination
-
     table.writeStream.foreachBatch { (batchDF: DataFrame, batchId: Long) =>
       batchDF.write
         .format("mongo")
