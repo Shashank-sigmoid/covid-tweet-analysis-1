@@ -17,12 +17,6 @@ object Server extends App {
   // Route setup for localhost
   val route = pathPrefix("api"){
     concat(
-      // Welcome Page
-      get{
-        path("hello"){
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
-        }
-      },
       // Fetch all content from database
       get{
         path("all"){
@@ -33,6 +27,14 @@ object Server extends App {
       get{
         path("query"){
           complete(HttpEntity(ContentTypes.`application/json`, fetchQueryJsonString(pipeline)))
+        }
+      },
+      // Homepage
+      get{
+        path("home") {
+          getFromResource("website/index.html")
+        } ~ {
+          getFromResourceDirectory("website")
         }
       }
     )
