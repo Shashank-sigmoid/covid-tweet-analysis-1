@@ -4,10 +4,11 @@ import com.twitter.hbc.core.Constants
 import com.twitter.hbc.core.endpoint.StatusesFilterEndpoint
 import com.twitter.hbc.core.processor.StringDelimitedProcessor
 import com.twitter.hbc.httpclient.auth.OAuth1
+import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
-import scala.io.Source
 
+import scala.io.Source
 import java.util.Properties
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
 
@@ -77,11 +78,18 @@ object TwitterToKafka {
   }
 
   def main(args: Array[String]): Unit = {
-    val access_token = System.getenv("ACCESS_TOKEN")
-    val access_token_secret = System.getenv("ACCESS_TOKEN_SECRET")
-    val api_key: String = System.getenv("API_KEY")
-    val api_key_secret = System.getenv("API_KEY_SECRET")
-    try TwitterToKafka.run(api_key, api_key_secret, access_token, access_token_secret)
+
+    val config = ConfigFactory.load()
+    val apiKey = config.getString("apiKey")
+    val apiKeySecret = config.getString("apiKeySecret")
+    val accessToken = config.getString("accessToken")
+    val accessTokenSecret = config.getString("accessTokenSecret")
+
+    System.setProperty("apiKey", apiKey)
+    System.setProperty("apiKeySecret", apiKeySecret)
+    System.setProperty("accessToken", accessToken)
+    System.setProperty("accessTokenSecret", accessTokenSecret)
+    try TwitterToKafka.run(apiKey, apiKeySecret, accessToken, accessTokenSecret)
     catch {
       case e: InterruptedException =>
         System.out.println(e)
