@@ -82,19 +82,19 @@ lazy val root = (project in file("."))
 # > Output
 Matching Java Virtual Machines (3):
     17.0.1 (arm64) "Oracle Corporation" - "Java SE 17.0.1" /Library/Java/JavaVirtualMachines/jdk-17.0.1.jdk/Contents/Home
-    16.0.2 (x86_64) "Amazon.com Inc." - "Amazon Corretto 16" /Users/shantanu/Library/Java/JavaVirtualMachines/corretto-16.0.2/Contents/Home
-    1.8.0_322 (x86_64) "Amazon" - "Amazon Corretto 8" /Users/shantanu/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
+    16.0.2 (x86_64) "Amazon.com Inc." - "Amazon Corretto 16" /Users/shashank/Library/Java/JavaVirtualMachines/corretto-16.0.2/Contents/Home
+    1.8.0_322 (x86_64) "Amazon" - "Amazon Corretto 8" /Users/shashank/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
 
 ~ vi .zshrc
 # NOW ADD BELOW 3 export into .zshrc
 
 # Export Amazon corretto 8 which is 1.8 version of java 
-~ export JAVA_HOME=/Users/shantanu/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
+~ export JAVA_HOME=/Users/shashank/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
 
 # For confluent to work (find stable solution)
 
 # Set HOME For confluent
-~ export CONFLUENT_HOME=/Users/shantanu/confluent-7.0.1
+~ export CONFLUENT_HOME=/Users/shashank/confluent-7.0.1
 
 # Add to path (temporary ig)
 ~ export PATH=$PATH:$CONFLUENT_HOME/bin
