@@ -3,7 +3,7 @@
 
 # Problem Statement
 
-[link](https://docs.google.com/document/d/1u7evaLRQ_CFOKFJSi0JniaaI_4hoxFYAyMqHrtSwFuY/edit)
+[Link](https://docs.google.com/document/d/1u7evaLRQ_CFOKFJSi0JniaaI_4hoxFYAyMqHrtSwFuY/edit)
 
 # Architecture
 
@@ -106,13 +106,13 @@ Matching Java Virtual Machines (3):
 ```
 Now go to localhost:9021 and create a topic `test-topic` with default settings
 ```bash
-~ kafka-console-producer --broker-list localhost:9092 --topic test-topic
+~ kafka-console-producer --broker-list localhost:9092 --topic covid-tweet
 >{"name": "Shantanu", "age": 22, "gender": "Male"}
 >{"name": "Bhavesh", "age":21, "gender": "Male"}
 ```
 Open another terminal for consumer
 ```bash
-~ kafka-console-consumer --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+~ kafka-console-consumer --bootstrap-server localhost:9092 --topic covid-tweet --from-beginning
 >{"name": "Shantanu", "age": 22, "gender": "Male"}
 >{"name": "Bhavesh", "age":21, "gender": "Male"}
 ```
@@ -157,16 +157,16 @@ advertised.listeners=PLAINTEXT://localhost:9092
 ~ brew services start kafka
 
 # Create kafka topic
-kafka-topics --create --topic test-topic --bootstrap-server localhost:9092 --replication-factor 1 --partitions 4
+kafka-topics --create --topic covid-tweet --bootstrap-server localhost:9092 --replication-factor 1 --partitions 4
 
 # Create producer console
-~ kafka-console-producer --broker-list localhost:9092 --topic test-topic
+~ kafka-console-producer --broker-list localhost:9092 --topic covid-tweet
 > send first message
 > send second message
 > send third message
 
 # Create consumer console in another terminal
-~ kafka-console-consumer --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+~ kafka-console-consumer --bootstrap-server localhost:9092 --topic covid-tweet --from-beginning
 send first message
 send second message
 send third message
