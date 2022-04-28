@@ -1,1 +1,0 @@
-db.getCollection('covid_tweets').find({ text: { $regex: /(donation|contribution|contri)/i } } )

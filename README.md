@@ -3,7 +3,7 @@
 
 # Problem Statement
 
-[link](https://docs.google.com/document/d/1u7evaLRQ_CFOKFJSi0JniaaI_4hoxFYAyMqHrtSwFuY/edit)
+[Link](https://docs.google.com/document/d/1u7evaLRQ_CFOKFJSi0JniaaI_4hoxFYAyMqHrtSwFuY/edit)
 
 # Architecture
 
@@ -78,19 +78,24 @@ lazy val root = (project in file("."))
 ```bash
 # List out the java versions and their path
 ~ /usr/libexec/java_home -V
+
 # > Output
 Matching Java Virtual Machines (3):
     17.0.1 (arm64) "Oracle Corporation" - "Java SE 17.0.1" /Library/Java/JavaVirtualMachines/jdk-17.0.1.jdk/Contents/Home
-    16.0.2 (x86_64) "Amazon.com Inc." - "Amazon Corretto 16" /Users/shantanu/Library/Java/JavaVirtualMachines/corretto-16.0.2/Contents/Home
-    1.8.0_322 (x86_64) "Amazon" - "Amazon Corretto 8" /Users/shantanu/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
+    16.0.2 (x86_64) "Amazon.com Inc." - "Amazon Corretto 16" /Users/shashank/Library/Java/JavaVirtualMachines/corretto-16.0.2/Contents/Home
+    1.8.0_322 (x86_64) "Amazon" - "Amazon Corretto 8" /Users/shashank/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
 
 ~ vi .zshrc
 # NOW ADD BELOW 3 export into .zshrc
+
 # Export Amazon corretto 8 which is 1.8 version of java 
-~ export JAVA_HOME=/Users/shantanu/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
+~ export JAVA_HOME=/Users/shashank/Library/Java/JavaVirtualMachines/corretto-1.8.0_322/Contents/Home
+
 # For confluent to work (find stable solution)
+
 # Set HOME For confluent
-~ export CONFLUENT_HOME=/Users/shantanu/confluent-7.0.1
+~ export CONFLUENT_HOME=/Users/shashank/confluent-7.0.1
+
 # Add to path (temporary ig)
 ~ export PATH=$PATH:$CONFLUENT_HOME/bin
 ```
@@ -101,13 +106,13 @@ Matching Java Virtual Machines (3):
 ```
 Now go to localhost:9021 and create a topic `test-topic` with default settings
 ```bash
-~ kafka-console-producer --broker-list localhost:9092 --topic test-topic
+~ kafka-console-producer --broker-list localhost:9092 --topic covid-tweet
 >{"name": "Shantanu", "age": 22, "gender": "Male"}
 >{"name": "Bhavesh", "age":21, "gender": "Male"}
 ```
 Open another terminal for consumer
 ```bash
-~ kafka-console-consumer --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+~ kafka-console-consumer --bootstrap-server localhost:9092 --topic covid-tweet --from-beginning
 >{"name": "Shantanu", "age": 22, "gender": "Male"}
 >{"name": "Bhavesh", "age":21, "gender": "Male"}
 ```
@@ -115,6 +120,7 @@ Open another terminal for consumer
 ```bash
 # Stop service
 ~ confluent local services stop
+
 # Delete the metadata
 ~ confluent local destroy
 ```
@@ -122,10 +128,13 @@ Open another terminal for consumer
 ```bash
 # Prerequisite for kafka
 ~ brew install java
+
 # Install kafka (upto 5 min)
 ~ brew install kafka
+
 # List services
 ~ brew services list
+
 # May require to uncomment last 2 line as showed below
 ~ vi /opt/homebrew/etc/kafka/server.properties
 ```
@@ -146,15 +155,18 @@ advertised.listeners=PLAINTEXT://localhost:9092
 # Start the services
 ~ brew services start zookeeper
 ~ brew services start kafka
+
 # Create kafka topic
-kafka-topics --create --topic test-topic --bootstrap-server localhost:9092 --replication-factor 1 --partitions 4
+kafka-topics --create --topic covid-tweet --bootstrap-server localhost:9092 --replication-factor 1 --partitions 4
+
 # Create producer console
-~ kafka-console-producer --broker-list localhost:9092 --topic test-topic
+~ kafka-console-producer --broker-list localhost:9092 --topic covid-tweet
 > send first message
 > send second message
 > send third message
+
 # Create consumer console in another terminal
-~ kafka-console-consumer --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+~ kafka-console-consumer --bootstrap-server localhost:9092 --topic covid-tweet --from-beginning
 send first message
 send second message
 send third message
