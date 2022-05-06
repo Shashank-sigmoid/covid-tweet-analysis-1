@@ -29,7 +29,7 @@ object Query5_TwitterToKafka {
       val props = new Properties()
       props.put("bootstrap.servers", "localhost:9092")
       props.put("acks", "all")
-      props.put("retries", 0)
+//      props.put("retries", 0)
       props.put("key.serializer", classOf[StringSerializer].getName)
       props.put("value.serializer", classOf[StringSerializer].getName)
       props

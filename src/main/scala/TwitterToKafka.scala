@@ -66,7 +66,7 @@ object TwitterToKafka{
       val props = new Properties()
       props.put("bootstrap.servers", "localhost:9092")
       props.put("acks", "all")
-      props.put("retries", 0)
+//      props.put("retries", 0)
       props.put("key.serializer", classOf[StringSerializer].getName)
       props.put("value.serializer", classOf[StringSerializer].getName)
       props
@@ -93,10 +93,14 @@ object TwitterToKafka{
 
   def main(args: Array[String]): Unit = {
     val config = ConfigFactory.load()
-    val consumerKey = config.getString("apiKey")
-    val consumerSecret = config.getString("apiKeySecret")
-    val accessToken = config.getString("accessToken")
-    val accessTokenSecret = config.getString("accessTokenSecret")
+//    val consumerKey = config.getString("apiKey")
+//    val consumerSecret = config.getString("apiKeySecret")
+//    val accessToken = config.getString("accessToken")
+//    val accessTokenSecret = config.getString("accessTokenSecret")
+    val accessToken: String="1509882730707775488-7Aa0roBpZ18YRHlwFAIQxwqvymWohb"
+    val accessTokenSecret: String="E8oXSHCg9uXGIgxi5RvvfBRiVc95FsMjhfvmZhNNtR0u8"
+    val consumerKey: String="4ep0QIoguktMBmWgvWHpBcKon"
+    val consumerSecret: String="qO250zSrdGHmAdpKgM3s7PYCpTH835dzF6R8cKfYyWWgVC0bwZ"
 
     System.setProperty("apiKey", consumerKey)
     System.setProperty("apiKeySecret", consumerSecret)
