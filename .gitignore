@@ -6,7 +6,6 @@
 .vscode
 target
 .bloop
-project
 application.properties
 .idea
 out
