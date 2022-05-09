@@ -58,6 +58,7 @@ object Query5_KafkaToMongo {
     // Remove document which doesn't contain user_location and created_at
     val table = table_with_null_values.na.drop(Seq("user_location", "created_at"))
 
+    // Write data related to WHO tweets into collection who_tweets
     table.writeStream.foreachBatch { (batchDF: DataFrame, batchId: Long) =>
       batchDF.write
         .format("mongo")

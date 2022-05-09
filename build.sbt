@@ -43,3 +43,20 @@ lazy val root = (project in file("."))
   .settings(
     name := "covid-tweet-analysis"
   )
+
+assemblyMergeStrategy in assembly := {
+  case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".class" => MergeStrategy.first
+  case PathList(ps @_*) if ps.last endsWith "public-suffix-list.txt" => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".properties" => MergeStrategy.concat
+  case PathList(ps @ _*) if ps.last endsWith "reflection-config.json" => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".dtd" => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".proto" => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".xsd" => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith "*.*" => MergeStrategy.first
+  case "BaseDateTime.class"                          => MergeStrategy.first
+  case x =>
+    val oldStrategy = (assemblyMergeStrategy in assembly).value
+    oldStrategy(x)
+
+}
