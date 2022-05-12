@@ -1,11 +1,13 @@
+import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
-import com.typesafe.config.ConfigFactory
-import twitter4j.{FilterQuery, StallWarning, Status, StatusDeletionNotice, StatusListener, TwitterStreamFactory, TwitterObjectFactory}
 import twitter4j.conf.ConfigurationBuilder
-import scala.io.Source
+import twitter4j._
+
+import java.nio.charset.CodingErrorAction
 import java.util.Properties
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
+import scala.io.{Codec, Source}
 
 /*
     Takes input as authentication strings for TwitterAPI
@@ -15,6 +17,12 @@ object TwitterToKafka{
 
   @throws[InterruptedException]
   def run(apiKey: String, apiKeySecret: String, accessToken: String, accessTokenSecret: String): Unit = {
+
+    // Defining codec for Source.fromFile to get data in specified format else (MalformedInputException)
+    // https://stackoverflow.com/questions/10846848/why-do-i-get-a-malformedinputexception-from-this-code
+    implicit val codec = Codec("UTF-8")
+    codec.onMalformedInput(CodingErrorAction.REPLACE)
+    codec.onUnmappableCharacter(CodingErrorAction.REPLACE)
 
     // Reading keywords related to coronavirus from txt file
     val filename = "src/main/resources/keywords.txt"
@@ -97,7 +105,7 @@ object TwitterToKafka{
       // Poll the message from the queue with timeout of 5 seconds
       val msg =  queue.poll(5, TimeUnit.SECONDS)
       if (msg != null) {
-        // println(msg)
+         println(msg)
         r += 1
         // Create a new producer record and send to kafka with topic: "covid-tweet", key: "null", message: "message"
         producer.send(new ProducerRecord[String, String]("covid-tweet", null, msg))
