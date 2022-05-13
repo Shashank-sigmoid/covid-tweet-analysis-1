@@ -1,7 +1,6 @@
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql.functions.{col, struct, to_json}
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, SparkSession}
-
 
 object SparkMongo {
   // To remove INFO lines from terminal while running the code
@@ -56,6 +55,6 @@ object SparkMongo {
     dataframeToJsonString(df)
   }
   def main(args: Array[String]): Unit = {
-
+//    print(fetchAllJsonString())
   }
 }
