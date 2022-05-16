@@ -1,13 +1,14 @@
 import com.typesafe.config.ConfigFactory
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.serialization.StringSerializer
-import twitter4j.conf.ConfigurationBuilder
 import twitter4j._
+import twitter4j.conf.ConfigurationBuilder
 
 import java.nio.charset.CodingErrorAction
 import java.util.Properties
 import java.util.concurrent.{LinkedBlockingQueue, TimeUnit}
-import scala.io.{Codec, Source}
+import scala.io.Codec
+import scala.io.Source
 
 /*
     Takes input as authentication strings for TwitterAPI
@@ -31,6 +32,8 @@ object TwitterToKafka{
     for(line <- Source.fromFile(filename).getLines) {
       keywords += line + ", "
     }
+    //TODO: add resources to fat jar: resources not recognized
+//      var keywords: String = "corona, coronavirus, covid"
 
     // Create an appropriately sized blocking custom queue
     val queue = new LinkedBlockingQueue[String](10000)
