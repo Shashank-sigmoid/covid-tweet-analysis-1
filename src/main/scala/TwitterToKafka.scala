@@ -39,7 +39,7 @@ object TwitterToKafka{
     val queue = new LinkedBlockingQueue[String](10000)
 
     val cb = new ConfigurationBuilder()
-      .setDebugEnabled(true)              // Enables deubg output
+      .setDebugEnabled(true)              // Enables debug output
       .setJSONStoreEnabled(true)          // raw JSON forms will be stored in DataObjectFactory.
       .setOAuthConsumerKey(apiKey)
       .setOAuthConsumerSecret(apiKeySecret)
