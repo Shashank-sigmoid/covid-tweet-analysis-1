@@ -116,7 +116,7 @@ object TwitterToKafka{
     try TwitterToKafka.run(consumerKey, consumerSecret, accessToken, accessTokenSecret)
     catch {
       case e: InterruptedException =>
-        System.out.println(e)
+        System.out.println(e.printStackTrace())
     }
   }
 }
