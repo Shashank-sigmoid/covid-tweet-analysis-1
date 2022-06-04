@@ -13,17 +13,18 @@ object KafkaToMongo {
     }
   }
 
+  // Function to configure the session with MongoDB in Docker
   def configureSpark(): SparkSession = {
-    // Configure the session with MongoDB
     val spark = SparkSession.builder
       .master("local")
       .appName("demo")
-      .config("spark.mongodb.output.uri", "mongodb://localhost:27017")
+      .config("spark.mongodb.input.uri", "mongodb://root:root@mongo:27017")
+      .config("spark.mongodb.output.uri", "mongodb://root:root@mongo:27017")
       .getOrCreate()
     spark
   }
 
-  // Takes dataFrame (Streaming) as input and writes it to given database and collection
+  // Function to take dataFrame (Streaming) as input and writes it to given database and collection
   def writeDataframeToMongo(table: DataFrame, database_name: String, collection_name: String): Unit = {
     table.writeStream.foreachBatch { (batchDF: DataFrame, batchId: Long) =>
       batchDF.write
@@ -32,11 +33,11 @@ object KafkaToMongo {
         .option("database", database_name)
         .option("collection", collection_name)
         .save()
-    }.start().awaitTermination()
+    }.start().awaitTermination(10000)
   }
 
   def readStreamFromKafka(spark: SparkSession, topic_name: String): DataFrame = {
-    // Reading the stream from Kafka Topic (Source)
+    // Subscribing to the Kafka-topic in Docker and reading the message stream (Source)
     //     df
     //     KEY                VALUE
     //    "value"         |  { "$binary" : "eyJjcmVhdGVjU5MDU1MjMzIn0NCg==", "$type" : "00" },
@@ -47,7 +48,7 @@ object KafkaToMongo {
     //    "timestampType" |  0
     val df = spark.readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "localhost:9092")
+      .option("kafka.bootstrap.servers", "kafka:9092")
       .option("subscribe", topic_name)
       .option("startingOffsets", "earliest")
       .load()
@@ -58,11 +59,10 @@ object KafkaToMongo {
     // "value"  | "{\"created_at\":\"Wed Apr 06 15:30:55 +0000 2022\",\"id\":1511728162857619458,\"id_str\":\"1511728162857619458\",
     val raw_json: DataFrame = df.selectExpr("CAST(value AS STRING)")
     raw_json
-
   }
 
   def filterColumnsFromDataframe(spark: SparkSession, raw_json: DataFrame, columns: Seq[String]): DataFrame = {
-    // get_json_object(col, path) => Extracts json object from a json string based on json path specified, 
+    // get_json_object(col, path) => Extracts json object from a json string based on json path specified,
     //                               and returns json string of the extracted json object.
     // path = "$$.$c" => First $ specifies second $ as variable not str, now one $ implies root document in MongoDB
     //                   Dot (.) implies go inside root document and find the value of key written right after it ($c)
@@ -82,8 +82,8 @@ object KafkaToMongo {
     table_with_potential_null_values
   }
 
+  // Function to remove the document which doesn't contain user_location and created_at
   def removeNullFromDataframe(table_with_potential_null_values: DataFrame): DataFrame = {
-    // Remove document which doesn't contain user_location and created_at
     val table = table_with_potential_null_values.na.drop(Seq("user_location", "created_at"))
     table
   }
@@ -99,14 +99,10 @@ object KafkaToMongo {
       "user.name",
       "user.screen_name",
       "user.location",
-      "geo",
-      "coordinates",
-      "place",
       "entities.hashtags",
       "lang"
     ))
     val table = removeNullFromDataframe(table_with_potential_null_values)
     writeDataframeToMongo(table, "twitter_db", "covid_tweets")
-
   }
 }

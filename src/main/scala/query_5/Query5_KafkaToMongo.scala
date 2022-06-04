@@ -82,7 +82,7 @@ object Query5_KafkaToMongo {
     table_with_potential_null_values
   }
 
-  // Function to remove document which doesn't contain user_location and created_at
+  // Function to remove the document which doesn't contain user_location and created_at
   def removeNullFromDataframe(table_with_potential_null_values: DataFrame): DataFrame = {
     val table = table_with_potential_null_values.na.drop(Seq("user_location", "created_at"))
     table
