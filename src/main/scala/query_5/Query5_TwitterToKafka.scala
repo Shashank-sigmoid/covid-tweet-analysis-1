@@ -24,12 +24,11 @@ object Query5_TwitterToKafka {
     // Create an appropriately sized blocking queue
     val queue = new LinkedBlockingQueue[String](10000)
 
-    // Set configuration for kafka
+    // Set configuration for kafka in Docker
     val kafkaProducerProps: Properties = {
       val props = new Properties()
-      props.put("bootstrap.servers", "localhost:9092")
+      props.put("bootstrap.servers", "kafka:9092")
       props.put("acks", "all")
-//      props.put("retries", 0)
       props.put("key.serializer", classOf[StringSerializer].getName)
       props.put("value.serializer", classOf[StringSerializer].getName)
       props
@@ -41,7 +40,7 @@ object Query5_TwitterToKafka {
     try {
 
       var page = 250
-      for (_ <- page until 500) {
+      for (_ <- page until 300) {
 
         // Page determines how old tweet would be fetched, Count determines the no. of tweets to be fetched
         val paging = new Paging(page, 5)
@@ -57,6 +56,7 @@ object Query5_TwitterToKafka {
         }
         page += 1
       }
+      // Size of the queue
       val sz = queue.size()
       for (_ <- 0 until queue.size()) {
         val msg = queue.poll(5, TimeUnit.SECONDS)
@@ -90,7 +90,7 @@ object Query5_TwitterToKafka {
     try Query5_TwitterToKafka.run(consumerKey, consumerSecret, accessToken, accessTokenSecret)
     catch {
       case e: InterruptedException =>
-        println(e)
+        println(e.printStackTrace())
     }
   }
 }
