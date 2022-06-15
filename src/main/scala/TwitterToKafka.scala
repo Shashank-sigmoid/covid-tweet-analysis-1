@@ -87,7 +87,7 @@ object TwitterToKafka{
 
     // Take x messages from stream and push it to kafka topic named covid-tweet
     var r = 0
-    for (_ <- 0 until 100) {
+    for (_ <- 0 until 1000) {
       val msg =  queue.poll(5, TimeUnit.SECONDS)
       if (msg != null) {
         println(msg)
